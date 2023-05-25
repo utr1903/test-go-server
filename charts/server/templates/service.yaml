@@ -4,6 +4,8 @@ metadata:
   name: {{ include "server.fullname" . }}
   labels:
     {{- include "server.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/scrape: "true"
 spec:
   type: {{ .Values.service.type }}
   ports:

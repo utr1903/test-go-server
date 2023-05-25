@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Exposes key-value pairs which are separeted by a semicolon
@@ -21,8 +24,23 @@ func kvp(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "%v", l)
 }
 
-func main() {
+// Returns the provided HTTP headers
+func headers(w http.ResponseWriter, req *http.Request) {
 
+	bytes, err := json.Marshal(req.Header)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(bytes)
+}
+
+func main() {
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/kvp", kvp)
+	http.HandleFunc("/headers", headers)
 	http.ListenAndServe(":8080", nil)
 }
